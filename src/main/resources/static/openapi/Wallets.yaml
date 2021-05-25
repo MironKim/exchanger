@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: Wallets RESTfull API
+  description: API для работы с кошельками
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Starting path of servers url
+security:
+  - basicAuth: []
+paths:
+  /wallets:
+    get:
+      summary: Поиск всех кошельков
+      tags:
+        - Wallets
+      operationId: findAll
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Wallet'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Создание кошелька
+      tags:
+        - Wallets
+      operationId: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletCreationParameters'
+      responses:
+        200:
+          description: OK
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /wallets/{walletId}:
+    parameters:
+      - $ref: '#/components/parameters/walletId'
+    delete:
+      summary: Удаление кошелька
+      tags:
+        - Wallets
+      operationId: deleteById
+      responses:
+        200:
+          description: OK
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /wallets/{walletId}/cash-in:
+    parameters:
+      - $ref: '#/components/parameters/walletId'
+    patch:
+      summary: Пополнение кошелька
+      tags:
+        - Wallets
+      operationId: cashIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashInWalletParameters'
+      responses:
+        200:
+          description: OK
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /wallets/{walletId}/cash-out:
+    parameters:
+      - $ref: '#/components/parameters/walletId'
+    patch:
+      summary: Обналичивание кошелька
+      tags:
+        - Wallets
+      operationId: cashOut
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashOutWalletParameters'
+      responses:
+        200:
+          description: OK
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    walletId:
+      name: walletId
+      description: Идентификатор кошелька
+      in: path
+      schema:
+        type: integer
+        format: int64
+        example: 1
+      required: true
+  responses:
+    NotFound:
+      description: Not Found
+    Conflict:
+      description: Conflict
+    UnprocessableEntity:
+      description: Unprocessable Entity
+    InternalServerError:
+      description: Internal Server Error
+  schemas:
+    Wallet:
+      description: Кошелек
+      properties:
+        id:
+          description: Идентификатор кошелька
+          type: integer
+          format: int64
+          example: 1
+        clientId:
+          description: Идентификатор клиента
+          type: integer
+          format: int64
+          example: 1
+        currency:
+          $ref: 'CommonComponents.yaml#/components/schemas/Currency'
+        amount:
+          description: Количество
+          type: number
+          format: decimal
+          minimum: 0
+          example: 99.99
+      required:
+        - id
+        - clientId
+        - currency
+        - amount
+    WalletCreationParameters:
+      description: Параметры создания кошелька
+      properties:
+        currency:
+          $ref: 'CommonComponents.yaml#/components/schemas/Currency'
+        amount:
+          description: Начальное количество
+          type: number
+          format: decimal
+          minimum: 0
+          example: 99.99
+      required:
+        - currency
+        - amount
+    CashInWalletParameters:
+      description: Параметры пополнения кошелька
+      properties:
+        amount:
+          description: Количество
+          type: number
+          format: decimal
+          minimum: 0
+          exclusiveMinimum: true
+          example: 99.99
+      required:
+        - amount
+    CashOutWalletParameters:
+      description: Параметры обналичивания кошелька
+      properties:
+        amount:
+          description: Количество
+          type: number
+          format: decimal
+          minimum: 0
+          exclusiveMinimum: true
+          example: 99.99
+      required:
+        - amount
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

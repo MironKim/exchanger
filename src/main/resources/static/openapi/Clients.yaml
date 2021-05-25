@@ -1,0 +1,126 @@
+openapi: 3.0.3
+info:
+  title: Clients RESTfull API
+  description: API для работы с клиентами
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Starting path of servers url
+security:
+  - basicAuth: []
+paths:
+  /clients:
+    get:
+      summary: Поиск всех клиентов
+      tags:
+        - Clients
+      operationId: findAll
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Создание клиента
+      tags:
+        - Clients
+      operationId: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientCreationParameters'
+      responses:
+        200:
+          description: OK
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /clients/{clientId}:
+    parameters:
+      - $ref: '#/components/parameters/clientId'
+    delete:
+      summary: Удаление клиента
+      tags:
+        - Clients
+      operationId: deleteById
+      responses:
+        200:
+          description: OK
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    clientId:
+      name: clientId
+      description: Идентификатор клиента
+      in: path
+      schema:
+        type: integer
+        format: int64
+        example: 1
+      required: true
+  responses:
+    NotFound:
+      description: Not Found
+    Conflict:
+      description: Conflict
+    UnprocessableEntity:
+      description: Unprocessable Entity
+    InternalServerError:
+      description: Internal Server Error
+  schemas:
+    Client:
+      description: Клиент
+      properties:
+        id:
+          description: Идентификатор
+          type: integer
+          format: int64
+          example: 1
+        username:
+          description: Имя
+          type: string
+          example: Иван
+      required:
+        - id
+        - username
+    ClientCreationParameters:
+      description: Клиент
+      properties:
+        username:
+          description: Имя
+          type: string
+          minLength: 1
+          maxLength: 10
+          example: Иван
+        password:
+          description: Пароль
+          type: string
+          minLength: 1
+          maxLength: 10
+          example: 1
+      required:
+        - id
+        - username
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic

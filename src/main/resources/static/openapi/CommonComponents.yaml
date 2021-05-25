@@ -1,0 +1,10 @@
+components:
+  schemas:
+    Currency:
+      description: Валюта
+      type: string
+      enum:
+        - USD
+        - RUB
+        - EUR
+      example: USD

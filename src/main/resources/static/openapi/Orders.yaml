@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: Orders RESTfull API
+  description: API для работы с заказами
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Starting path of servers url
+security:
+  - basicAuth: []
+paths:
+  /orders:
+    get:
+      summary: Поиск всех заказов
+      tags:
+        - Orders
+      operationId: findAll
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Создание заказа
+      tags:
+        - Orders
+      operationId: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreationParameters'
+      responses:
+        200:
+          description: OK
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+  /orders/{orderId}/confirm:
+    parameters:
+      - $ref: '#/components/parameters/orderId'
+    put:
+      summary: Исполнение заказа
+      tags:
+        - Orders
+      operationId: confirmById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderConfirmParameters'
+      responses:
+        200:
+          description: OK
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
+        422:
+          $ref: '#/components/responses/UnprocessableEntity'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    orderId:
+      name: orderId
+      description: Идентификатор заказа
+      in: path
+      schema:
+        type: integer
+        format: int64
+        example: 1
+      required: true
+  responses:
+    NotFound:
+      description: Not Found
+    Conflict:
+      description: Conflict
+    UnprocessableEntity:
+      description: Unprocessable Entity
+    InternalServerError:
+      description: Internal Server Error
+  schemas:
+    OrderCreationParameters:
+      description: Параметры для создания заказа
+      type: object
+      properties:
+        sourceCurrency:
+          $ref: 'CommonComponents.yaml#/components/schemas/Currency'
+        targetCurrency:
+          $ref: 'CommonComponents.yaml#/components/schemas/Currency'
+        rate:
+          description: Курс
+          type: number
+          format: decimal
+          minimum: 0
+          exclusiveMinimum: true
+          example: 99.99
+        type:
+          $ref: '#/components/schemas/OrderType'
+        walletId:
+          description: Идентификатор кошелька
+          type: integer
+          format: int64
+          example: 1
+        amount:
+          description: Количество для обмена
+          type: number
+          format: decimal
+          minimum: 0
+          exclusiveMinimum: true
+          example: 99.99
+      required:
+        - sourceCurrency
+        - targetCurrency
+        - rate
+        - type
+        - amount
+    OrderConfirmParameters:
+      description: Параметры для исполнения заказа
+      type: object
+      properties:
+        walletId:
+          description: Идентификатор кошелька
+          type: integer
+          format: int64
+          example: 1
+      required:
+        - walletId
+    Order:
+      description: Заказ
+      properties:
+        id:
+          description: Идентификатор заказа
+          type: integer
+          format: int64
+          example: 1
+        clientId:
+          description: Идентификатор клиента
+          type: integer
+          format: int64
+          example: 1
+        sourceCurrency:
+          $ref: 'CommonComponents.yaml#/components/schemas/Currency'
+        targetCurrency:
+          $ref: 'CommonComponents.yaml#/components/schemas/Currency'
+        rate:
+          description: Курс
+          type: number
+          format: decimal
+          minimum: 0
+          exclusiveMinimum: true
+          example: 99.99
+        type:
+          $ref: '#/components/schemas/OrderType'
+        amount:
+          description: Количество к обмену
+          type: number
+          format: decimal
+          minimum: 0
+          exclusiveMinimum: true
+          example: 99.99
+      required:
+        - id
+        - clientId
+        - sourceCurrency
+        - targetCurrency
+        - rate
+        - type
+        - amount
+    OrderType:
+      description: Тип заказа
+      type: string
+      enum:
+        - BUY # Покупка
+        - SALE # Продажа
+      example: BUY
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
